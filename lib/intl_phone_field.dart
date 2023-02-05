@@ -381,7 +381,9 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
   Widget build(BuildContext context) {
     return TextFormField(
       initialValue: (widget.controller == null) ? number : null,
-      autofillHints: widget.disableAutoFillHints ? null : [AutofillHints.telephoneNumberNational],
+      autofillHints: widget.disableAutoFillHints
+          ? null
+          : [AutofillHints.telephoneNumberNational],
       readOnly: widget.readOnly,
       obscureText: widget.obscureText,
       textAlign: widget.textAlign,
@@ -425,6 +427,21 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
       },
       validator: (value) {
         if (value == null || !isNumeric(value)) return validatorMessage;
+
+        if (_selectedCountry.mobilePrefixes.length > 0) {
+          String wihtoutLeadingZero = value;
+          if (_selectedCountry.haveLeadingZero && value.startsWith('0'))
+            wihtoutLeadingZero = value.substring(1);
+          String result = _selectedCountry.mobilePrefixes.firstWhere(
+              (prefix) => wihtoutLeadingZero.startsWith(prefix),
+              orElse: () => '-1');
+          if (result == '-1') return validatorMessage;
+        }
+
+        if (_selectedCountry.haveLeadingZero &&
+            value.length == _selectedCountry.maxLength &&
+            !value.startsWith('0')) return validatorMessage;
+
         if (!widget.disableLengthCheck) {
           return value.length >= _selectedCountry.minLength &&
                   value.length <= _selectedCountry.maxLength
@@ -458,7 +475,9 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                SizedBox(width: 4,),
+                SizedBox(
+                  width: 4,
+                ),
                 if (widget.enabled &&
                     widget.showDropdownIcon &&
                     widget.dropdownIconPosition == IconPosition.leading) ...[
