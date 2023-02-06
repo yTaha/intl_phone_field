@@ -1,6 +1,7 @@
 library intl_phone_field;
 
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -426,7 +427,9 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
         widget.onChanged?.call(phoneNumber);
       },
       validator: (value) {
-        if (value == null || !isNumeric(value)) return validatorMessage;
+        log(value!);
+        if (value == null || !isNumeric(value))
+          return widget.invalidNumberMessage;
 
         if (_selectedCountry.mobilePrefixes.length > 0) {
           String wihtoutLeadingZero = value;
@@ -435,12 +438,12 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
           String result = _selectedCountry.mobilePrefixes.firstWhere(
               (prefix) => wihtoutLeadingZero.startsWith(prefix),
               orElse: () => '-1');
-          if (result == '-1') return validatorMessage;
+          if (result == '-1') return widget.invalidNumberMessage;
         }
 
         if (_selectedCountry.haveLeadingZero &&
             value.length == _selectedCountry.maxLength &&
-            !value.startsWith('0')) return validatorMessage;
+            !value.startsWith('0')) return widget.invalidNumberMessage;
 
         if (!widget.disableLengthCheck) {
           return value.length >= _selectedCountry.minLength &&
